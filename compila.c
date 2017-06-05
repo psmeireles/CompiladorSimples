@@ -22,7 +22,7 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 
 			if(var == 'p'){ // Parametro
 				codigo[0] = 0x01;
-				if(inx = 1) //p1
+				if(inx == 1) //p1
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
@@ -53,7 +53,7 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 			
 			if(var == 'p'){ // Parametro
 				codigo[0] = 0x29;
-				if(inx = 1) //p1
+				if(inx == 1) //p1
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
@@ -85,7 +85,7 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 			if(var == 'p'){ // Parametro
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
-				if(inx = 1) //p1
+				if(inx == 1) //p1
 					codigo[2] = 0xd7;
 				else		//p2
 					codigo[2] = 0xd6;
