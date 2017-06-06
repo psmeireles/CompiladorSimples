@@ -15,7 +15,7 @@ int main (void) {
 
 	f = compila(myfp);
 
-	a = (*f)(52,53);
+	a = (*f)(30,28);
 	printf("%d", a);
 
 
