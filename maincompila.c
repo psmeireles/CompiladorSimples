@@ -8,14 +8,14 @@ int main (void) {
   FILE *myfp;
   int a;
 
-	if ((myfp = fopen ("desvio_p4", "r")) == NULL) {
+	if ((myfp = fopen ("menorPositivo", "r")) == NULL) {
     	perror ("nao conseguiu abrir arquivo!");
     	exit(1);
 	}
 
 	f = compila(myfp);
 
-	a = (*f)(3,4,5,6);
+	a = (*f)(52,53);
 	printf("%d", a);
 
 
