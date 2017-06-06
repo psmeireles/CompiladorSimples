@@ -17,8 +17,10 @@ movl -4(%rbp), %edx
 cmpl $0, %edx
 jne return
 
+movl $0, %edx
+subl $7, %edx
+movl %edx, -4(%rbp)
 
-return:
 movl -4(%rbp), %eax
 leave
 ret
