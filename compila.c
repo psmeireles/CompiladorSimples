@@ -14,7 +14,7 @@ void dump(void *p, int n) {
 //TODO: [GABRIELLE] trocar o retorno das funcoes que retornam uma alocação de memoria local para void (passando endereço de codigo como parametro) ou retornando e depois dando free no espaço alocado
 
 typedef int (*funcp) ();
-//[GABRIELLE] ta dando warning pq essas variaveis nao estao sendo usadas
+
 static unsigned char cod_ret[5] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };							/* ret */
 static unsigned char cod_pilha[4] = { 0x55, 0x48, 0x89, 0xe5 };		/* pushq %rbp   movq %rsp, %rbp */
 static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };		/* subq $16, %rsp */
@@ -273,7 +273,7 @@ static void error (const char *msg, int line) {
 
 funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
-	int linha = 1, pos = 0, i, aux, endDestino[500], idxJmp[500], countJmp = 0;
+	int linha = 1, pos = 0, i, aux, linhaDestino[500], idxJmp[500], countJmp = 0;
 	char c;
 	long endLinhas[500], endPosJmp[500], endDif;
 /* 
@@ -299,7 +299,7 @@ funcp compila (FILE *f){
 
 
 	while ((c = fgetc(f)) != EOF) {
-		endLinhas[linha - 1] = (long)(&codigo[pos]); //verificar se é a posicao atual ou a posicao seguinte que precisa ser guardada
+		endLinhas[linha - 1] = (long)(&codigo[pos-1]); //verificar se é a posicao atual ou a posicao seguinte que precisa ser guardada
     	
     	printf("linha atual %d  %d  %x \n", linha, pos, &codigo[pos]);
 
@@ -317,7 +317,7 @@ funcp compila (FILE *f){
 	      }
 	      case 'i': { /* desvio */
 	      printf("ENTROU NO DESVIO \n");
-	        gera_cod_desvio (f, codigo, &pos, idxJmp, endPosJmp, endDestino, &countJmp);
+	        gera_cod_desvio (f, codigo, &pos, idxJmp, endPosJmp, linhaDestino, &countJmp);
 	        break;
 	      }
 	      default: error("Comando Desconhecido", linha);
@@ -327,19 +327,24 @@ funcp compila (FILE *f){
 	}
 
   //DUMP CODIGO
-  dump(codigo, pos-1);
+	printf("COUNTJUMP: %d \n", countJmp);
 
 //preenche o vetor com os endereços q estao faltando
 	for (i=0; i<countJmp; i++){
-		linha = endDestino[i]; //pega a linha pra qual sera feito o desvio do jmp
-		aux = endLinhas[linha - 1]; //descobre qual o endereco onde comeca a linha da instrucao de destino
+		linha = linhaDestino[i]; //pega a linha pra qual sera feito o desvio do jmp
+		printf("LINHA DESTINO: %d \n", linha);
+		aux = endLinhas[linha-1]; //descobre qual o endereco onde comeca a linha da instrucao de destino
+		printf("ENDERECO DESTINO: %x \n", aux);
 		endDif = aux - endPosJmp[i]; //calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
+		printf("DIFERENCA DOS ENDERECOS: %x \n", endDif);
 		aux = idxJmp[i]; //pega a posicao do codigo q sera preenchida com endLinha
-		codigo[aux] = (unsigned char)endDif; //armazena o 1o byte do dif
-		codigo[aux+1] = (unsigned char)(endDif>>8); //armazena o 2o byte
-		codigo[aux+2] = (unsigned char)(endDif>>16); //armazena o 3o byte
-		codigo[aux+3] = (unsigned char)(endDif>>24); //armazena o 4o byte
+		codigo[aux-1] = (unsigned char)endDif; //armazena o 1o byte do dif
+		codigo[aux] = (unsigned char)(endDif>>8); //armazena o 2o byte
+		codigo[aux+1] = (unsigned char)(endDif>>16); //armazena o 3o byte
+		codigo[aux+2] = (unsigned char)(endDif>>24); //armazena o 4o byte
 	}
+
+  	dump(codigo, pos-1);
 
   return (funcp) codigo;
 }
