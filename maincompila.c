@@ -21,7 +21,7 @@ int main (void) {
 	f2 = compila(myfp2);
 	a = (*f)(5);
 	printf("\n %d \n", a);
-	a = (*f2)(6,4);
+	a = (*f2)(6,-4);
 	printf("\n %d \n", a);
 
   fclose(myfp);
