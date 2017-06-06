@@ -8,15 +8,15 @@ int main (void) {
   FILE *myfp;
   int a;
 
-	if ((myfp = fopen ("desvio_v3v4", "r")) == NULL) {
+	if ((myfp = fopen ("squad", "r")) == NULL) {
     	perror ("nao conseguiu abrir arquivo!");
     	exit(1);
 	}
 
 	f = compila(myfp);
 
-	a = (*f)();
-	printf("%d", a);
+	a = (*f)(10);
+	printf("\n %d \n", a);
 
 
   fclose(myfp);

@@ -282,7 +282,7 @@ printf("COMPILA ATUAL");
 
 
 	while ((c = fgetc(f)) != EOF) {
-		endLinhas[linha - 1] = (int)&codigo[pos]; // Verificar se é a posicao atual ou a posicao seguinte que precisa ser guardada
+		endLinhas[linha - 1] = (int)&codigo[pos]; // Guarda o endereco do inicio da instrucao da linha
 
 	    switch (c) {
 	      case 'r': { // Retorno 
