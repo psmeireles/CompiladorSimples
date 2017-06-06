@@ -206,7 +206,7 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
 	
 }
 
-void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, int *endPosJmp, int *linhaDestino, int *countJmp){
+void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, long *endPosJmp, int *linhaDestino, int *countJmp){
 	char varp;
     int idx, linha, size = 0;
     unsigned char codigo_desvio[12]; //12 eh o tamanho maximo do codigo de desvio
@@ -244,10 +244,10 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, i
 	memcpy((unsigned char*)(codigo + *pos), codigo_desvio, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 	
-	idxJmp[*countJmp] = *pos; // Grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
+	idxJmp[*countJmp] = *pos; // Guarda a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
 	*pos += 4; // Pula os quatro bytes seguintes
-	endPosJmp[*countJmp] = (int)&codigo[*pos]; // Guarda o endereço da instrução logo depois da instrução de desvio
-	linhaDestino[*countJmp] = linha; // Guarda numero da linha para onde o jmp vai
+	endPosJmp[*countJmp] = (long)&codigo[*pos]; // Guarda o endereço da instrução logo depois da instrução de desvio
+	linhaDestino[*countJmp] = linha; // Guarda numero da linha para onde o jump vai
 	(*countJmp)++;
 
 }
@@ -260,7 +260,9 @@ static void error (const char *msg, int line) {
 funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*768);	
 	// 768 -> Primeiro múltiplo de 64 acima de 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
-	int linha = 1, pos = 0, i, aux, countJmp = 0, linhaDestino[64], idxJmp[768], endLinhas[64], endPosJmp[768], endDif;
+	//64 -> primeiro multiplo de 64 acima de 50 (numero maximo de linhas)
+	int linha = 1, pos = 0, i, aux, countJmp = 0, linhaDestino[64], idxJmp[64];
+	long endLinhas[64], endPosJmp[64], endDif, endereco;
 	char c;
 /* 
 	
@@ -282,7 +284,7 @@ printf("COMPILA ATUAL");
 
 
 	while ((c = fgetc(f)) != EOF) {
-		endLinhas[linha - 1] = (int)&codigo[pos]; // Guarda o endereco do inicio da instrucao da linha
+		endLinhas[linha - 1] = (long)&codigo[pos]; // Guarda o endereco do inicio da instrucao da linha
 
 	    switch (c) {
 	      case 'r': { // Retorno 
@@ -307,8 +309,8 @@ printf("COMPILA ATUAL");
 // Preenche o vetor com os endereços que estao faltando
 	for (i=0; i<countJmp; i++){
 		linha = linhaDestino[i];						// Pega a linha para qual sera feito o desvio do jmp
-		aux = endLinhas[linha-1];						// Descobre qual o endereco onde comeca a linha da instrucao de destino
-		endDif = aux - endPosJmp[i];					// Calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
+		endereco = endLinhas[linha-1];						// Descobre qual o endereco onde comeca a linha da instrucao de destino
+		endDif = endereco - endPosJmp[i];					// Calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
 		aux = idxJmp[i];								// Pega a posicao do codigo q sera preenchida com endLinha
 		codigo[aux] = (unsigned char)endDif;			// Armazena o 1o byte do dif
 		codigo[aux+1] = (unsigned char)(endDif>>8);		// Armazena o 2o byte
