@@ -20,14 +20,14 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 	switch(op) {
 		case '+': { //Adicao
 
-			if(var = 'p'){ // Parametro
+			if(var == 'p'){ // Parametro
 				codigo[0] = 0x01;
 				if(inx = 1) //p1
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
 			}
-			else if(var = 'v'){ // Variavel local
+			else if(var == 'v'){ // Variavel local
 				codigo[0] = 0x03;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
@@ -51,14 +51,14 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 		}
 		case '-': {
 			
-			if(var = 'p'){ // Parametro
+			if(var == 'p'){ // Parametro
 				codigo[0] = 0x29;
 				if(inx = 1) //p1
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
 			}
-			else if(var = 'v'){ // Variavel local
+			else if(var == 'v'){ // Variavel local
 				codigo[0] = 0x2b;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
@@ -82,7 +82,7 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 		}
 		case '*': {
 			
-			if(var = 'p'){ // Parametro
+			if(var == 'p'){ // Parametro
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
 				if(inx = 1) //p1
@@ -90,7 +90,7 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 				else		//p2
 					codigo[2] = 0xd6;
 			}
-			else if(var = 'v'){ // Variavel local
+			else if(var == 'v'){ // Variavel local
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
 				codigo[2] = 0x55;
