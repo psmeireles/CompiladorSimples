@@ -1,6 +1,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
+#include <compila.h>
 
 typedef int (*funcp) ();
 
