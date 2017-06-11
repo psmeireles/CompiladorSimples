@@ -17,8 +17,9 @@ void gera_cod_ret(FILE *f, unsigned char *codigo){
 	strcat((char *)codigo, (char *)cod_ret);
 }
 
-unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador e o segundo termo da atribuicao
+void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int inx) { // Recebe do operador e o segundo termo da atribuicao
 	unsigned char codigo[6];
+	int size = 0; //tamanho da instrucao, que varia se for parametro, variavel local ou constante
 	switch(op) {
 		case '+': { //Adicao
 
@@ -28,17 +29,20 @@ unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
+				size = 2;
 			}
 			else if(var == 'v') { // Variavel local
 				codigo[0] = 0x03;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+				size = 3;
 			}
 			else { // Constante
-				if(inx < 256) {
+				if(inx < 256) { //[GABRIELLE] nao precisa fazer manipulacao dos bits pra colocar os valores em little endian?
 					codigo[0] = 0x83;
 					codigo[1] = 0xc2;
 					codigo[2] = (unsigned char) inx;
+					size = 3;
 				}
 				else {
 					codigo[0] = 0x81;
@@ -47,9 +51,10 @@ unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador
 					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
 					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
 					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+					size = 6;
 				}
 			}
-			return codigo;
+			break;
 		}
 		case '-': {
 			
@@ -59,17 +64,20 @@ unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
+				size = 2;
 			}
 			else if(var == 'v') { // Variavel local
 				codigo[0] = 0x2b;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+				size = 3;
 			}
 			else { // Constante
-				if(inx < 255) {
+				if(inx < 255) { //[GABRIELLE] nao precisa fazer manipulacao dos bits pra colocar os valores em little endian?
 					codigo[0] = 0x83;
 					codigo[1] = 0xea;
 					codigo[2] = (char) inx;
+					size = 3;
 				}
 				else {
 					codigo[0] = 0x81;
@@ -78,9 +86,10 @@ unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador
 					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
 					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
 					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+					size = 6;
 				}
 			}
-			return codigo;
+			break;
 		}
 		case '*': {
 			
@@ -91,18 +100,21 @@ unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador
 					codigo[2] = 0xd7;
 				else		//p2
 					codigo[2] = 0xd6;
+				size = 3;
 			}
 			else if(var == 'v') { // Variavel local
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
 				codigo[2] = 0x55;
 				codigo[3] = 0xff + 1 - 4*(unsigned char)inx;
+				size = 4;
 			}
 			else { // Constante
-				if(inx < 128) {
+				if(inx < 128) { //[GABRIELLE] nao precisa fazer manipulacao dos bits pra colocar os valores em little endian?
 					codigo[0] = 0x6b;
 					codigo[1] = 0xd2;
 					codigo[2] = (char) inx;
+					size = 3;
 				}
 				else {
 					codigo[0] = 0x69;
@@ -111,34 +123,43 @@ unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador
 					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
 					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
 					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+					size = 6;
 				}
 			}
-			return codigo;
+			break;
 		}
 	}
-	return codigo;
+
+	memcpy((unsigned char*)(codigo_in + *pos - 1), (unsigned char*)codigo, size); //copia a nova instrucao para o vetor de codigo
+	*pos += size; //atualiza posicao final do vetor de codigo
+
+	//return codigo;
 }
 
-unsigned char * move_lugar_certo(char var, int inx){	// Recebe o termo que recebera a atribuicao
+void move_lugar_certo(unsigned char* codigo_in, int *pos, char var, int inx){	// Recebe o termo que recebera a atribuicao
 	unsigned char codigo[3];
+	int size = 0;
 	codigo[0] = 0x89;
 	if(var == 'p') { //Atribuicao em parametro
 		if(inx == 1) //p1
 			codigo[1] = 0xd7; 
 		else //p2
 			codigo[1] = 0xd6;
+		size = 2;
 	}
 	else { //Atribuicao em variavel local
 		codigo[1] = 0x55;
 		codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+		size = 3;
 	}
-	return codigo;
+
+	memcpy((unsigned char*)(codigo_in + *pos - 1), (unsigned char*)codigo, size);
+	*pos += size; //atualiza a posicao final do vetor de codigo
 }
 
-unsigned char * gera_cod_atribuicao(FILE *f, char c){
-	int idx0, idx1, idx2;
+void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
+	int idx0, idx1, idx2, size = 0;
     char var0 = c, var1, var2, op;
-    //unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
 	unsigned char cod_atribuicao[14];	// 14 eh o tamanho maximo que o codigo de atribuicao assume
 
     fscanf(f, "%d = %c%d %c %c%d", &idx0, &var1, &idx1, &op, &var2, &idx2);
@@ -151,7 +172,7 @@ unsigned char * gera_cod_atribuicao(FILE *f, char c){
 				cod_atribuicao[1] = 0xfa;
 			else
 				cod_atribuicao[1] = 0xf2;
-
+			size = 2;
 			break;
 		}
 		case 'v': { //Variavel local
@@ -159,28 +180,33 @@ unsigned char * gera_cod_atribuicao(FILE *f, char c){
 			cod_atribuicao[0] = 0x8b;
 			cod_atribuicao[1] = 0x55;
 			cod_atribuicao[2] = 0xff + 1 - 4*(unsigned char)idx1;
-
+			size = 3;
 			break;
 		}
 		case '$': { //Constante
 			// Mover constante pro %edx
 			cod_atribuicao[0] = 0xba;
+
+
 			cod_atribuicao[1] = idx1 & 0xff;
 			cod_atribuicao[2] = (unsigned char) ((idx1 >> 8) & 0xff);
 			cod_atribuicao[3] = (unsigned char) ((idx1 >> 16) & 0xff);
 			cod_atribuicao[4] = (unsigned char) ((idx1 >> 24) & 0xff);
-
+			size = 5;
 			break;
 		}
 	}
+	memcpy((unsigned char*)(codigo+ *pos - 1), cod_atribuicao, size);
+	*pos += size; //atualiza a posicao final do vetor de codigo
 
 	//Fazendo a operacao no %edx
-	strcat( (char *) cod_atribuicao, (char *) faz_operacao(op, var2, idx2) );
+	faz_operacao(codigo, pos, op, var2, idx2);
+
 
 	//Movendo pro lugar certo
-	strcat( (char *) cod_atribuicao, (char *) move_lugar_certo(var0, idx0) ); 
+	move_lugar_certo(codigo, pos, var0, idx0);
 			
-	return cod_atribuicao;
+
 }
 
 static void error (const char *msg, int line) {
@@ -190,7 +216,7 @@ static void error (const char *msg, int line) {
 
 funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
-	int line = 1;
+	int line = 1, pos = 0;
     int  c;
 
 	while ((c = fgetc(f)) != EOF) {
@@ -201,7 +227,7 @@ funcp compila (FILE *f){
       }
       case 'v': 
       case 'p': {  /* atribuicao */
-		strcat( (char *) codigo, (char *) gera_cod_atribuicao(f, c) );
+		gera_cod_atribuicao(f, codigo, &pos, c);
         break;
       }
       case 'i': { /* desvio */
