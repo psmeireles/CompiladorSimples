@@ -3,11 +3,13 @@
 #include<string.h>
 #include "compila.h"
 
-typedef int (*funcp) ();
+//TODO: [GABRIELLE] trocar o retorno das funcoes que retornam uma alocação de memoria local para void (passando endereço de codigo como parametro) ou retornando e depois dando free no espaço alocado
 
-static unsigned char cod_ret[] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };							/* ret */
-static unsigned char cod_pilha[] = { 0x55, 0x48, 0x89, 0xe5 };		/* pushq %rbp   movq %rsp, %rbp */
-static unsigned char cod_sub_rsp[] = { 0x48, 0x83, 0xec, 0x10 };		/* subq $16, %rsp */
+typedef int (*funcp) ();
+//[GABRIELLE] ta dando warning aqui não sei pq...
+static unsigned char cod_ret[5] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };							/* ret */
+static unsigned char cod_pilha[4] = { 0x55, 0x48, 0x89, 0xe5 };		/* pushq %rbp   movq %rsp, %rbp */
+static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };		/* subq $16, %rsp */
 
 void gera_cod_ret(FILE *f, unsigned char *codigo){
 	char c0;
@@ -15,30 +17,30 @@ void gera_cod_ret(FILE *f, unsigned char *codigo){
 	strcat((char *)codigo, (char *)cod_ret);
 }
 
-unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador e o segundo termo da atribuicao
+unsigned char * faz_operacao(char op, char var, int inx) { // Recebe do operador e o segundo termo da atribuicao
 	unsigned char codigo[6];
 	switch(op) {
 		case '+': { //Adicao
 
-			if(var == 'p'){ // Parametro
+			if(var == 'p') { // Parametro
 				codigo[0] = 0x01;
 				if(inx == 1) //p1
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
 			}
-			else if(var == 'v'){ // Variavel local
+			else if(var == 'v') { // Variavel local
 				codigo[0] = 0x03;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
 			}
-			else{ // Constante
-				if(inx < 256){
+			else { // Constante
+				if(inx < 256) {
 					codigo[0] = 0x83;
 					codigo[1] = 0xc2;
 					codigo[2] = (unsigned char) inx;
 				}
-				else{
+				else {
 					codigo[0] = 0x81;
 					codigo[1] = 0xc2;
 					codigo[2] = (unsigned char) (inx & 0xff);
@@ -51,25 +53,25 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 		}
 		case '-': {
 			
-			if(var == 'p'){ // Parametro
+			if(var == 'p') { // Parametro
 				codigo[0] = 0x29;
 				if(inx == 1) //p1
 					codigo[1] = 0xfa;
 				else		//p2
 					codigo[1] = 0xf2;
 			}
-			else if(var == 'v'){ // Variavel local
+			else if(var == 'v') { // Variavel local
 				codigo[0] = 0x2b;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
 			}
-			else{ // Constante
-				if(inx < 255){
+			else { // Constante
+				if(inx < 255) {
 					codigo[0] = 0x83;
 					codigo[1] = 0xea;
 					codigo[2] = (char) inx;
 				}
-				else{
+				else {
 					codigo[0] = 0x81;
 					codigo[1] = 0xea;
 					codigo[2] = (unsigned char) (inx & 0xff);
@@ -82,7 +84,7 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 		}
 		case '*': {
 			
-			if(var == 'p'){ // Parametro
+			if(var == 'p') { // Parametro
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
 				if(inx == 1) //p1
@@ -90,19 +92,19 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 				else		//p2
 					codigo[2] = 0xd6;
 			}
-			else if(var == 'v'){ // Variavel local
+			else if(var == 'v') { // Variavel local
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
 				codigo[2] = 0x55;
 				codigo[3] = 0xff + 1 - 4*(unsigned char)inx;
 			}
-			else{ // Constante
-				if(inx < 128){
+			else { // Constante
+				if(inx < 128) {
 					codigo[0] = 0x6b;
 					codigo[1] = 0xd2;
 					codigo[2] = (char) inx;
 				}
-				else{
+				else {
 					codigo[0] = 0x69;
 					codigo[1] = 0xd2;
 					codigo[2] = (inx & 0xff);
@@ -114,18 +116,19 @@ unsigned char * faz_operacao(char op, char var, int inx){ // Recebe do operador 
 			return codigo;
 		}
 	}
+	return codigo;
 }
 
 unsigned char * move_lugar_certo(char var, int inx){	// Recebe o termo que recebera a atribuicao
 	unsigned char codigo[3];
 	codigo[0] = 0x89;
-	if(var == 'p'){ //Atribuicao em parametro
+	if(var == 'p') { //Atribuicao em parametro
 		if(inx == 1) //p1
 			codigo[1] = 0xd7; 
 		else //p2
 			codigo[1] = 0xd6;
 	}
-	else{ //Atribuicao em variavel local
+	else { //Atribuicao em variavel local
 		codigo[1] = 0x55;
 		codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
 	}
@@ -135,6 +138,7 @@ unsigned char * move_lugar_certo(char var, int inx){	// Recebe o termo que receb
 unsigned char * gera_cod_atribuicao(FILE *f, char c){
 	int idx0, idx1, idx2;
     char var0 = c, var1, var2, op;
+    //unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
 	unsigned char cod_atribuicao[14];	// 14 eh o tamanho maximo que o codigo de atribuicao assume
 
     fscanf(f, "%d = %c%d %c %c%d", &idx0, &var1, &idx1, &op, &var2, &idx2);
@@ -185,7 +189,7 @@ static void error (const char *msg, int line) {
 }
 
 funcp compila (FILE *f){
-	unsigned char *codigo;
+	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
 	int line = 1;
     int  c;
 
