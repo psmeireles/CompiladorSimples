@@ -11,10 +11,11 @@ static unsigned char cod_ret[5] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };							/* ret
 static unsigned char cod_pilha[4] = { 0x55, 0x48, 0x89, 0xe5 };		/* pushq %rbp   movq %rsp, %rbp */
 static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };		/* subq $16, %rsp */
 
-void gera_cod_ret(FILE *f, unsigned char *codigo){
+void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos){
 	char c0;
     fscanf(f, "et%c", &c0);
-	strcat((char *)codigo, (char *)cod_ret);
+	memcpy((unsigned char*)(codigo_in + *pos - 1), cod_ret, sizeof(cod_ret));
+
 }
 
 void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int inx) { // Recebe do operador e o segundo termo da atribuicao
