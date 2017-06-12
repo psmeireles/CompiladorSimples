@@ -14,7 +14,8 @@ static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };		/* subq $16, 
 void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos){
 	char c0;
     fscanf(f, "et%c", &c0);
-	memcpy((unsigned char*)(codigo_in + *pos - 1), cod_ret, sizeof(cod_ret));
+	memcpy((unsigned char*)(codigo + *pos - 1), cod_ret, 5);
+	*pos += 5;
 
 }
 
@@ -223,7 +224,7 @@ funcp compila (FILE *f){
 	while ((c = fgetc(f)) != EOF) {
     switch (c) {
       case 'r': { /* retorno */
-        gera_cod_ret(f, codigo);
+        gera_cod_ret(f, codigo, &pos);
         break;
       }
       case 'v': 
