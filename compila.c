@@ -220,6 +220,12 @@ funcp compila (FILE *f){
 	int line = 1, pos = 0, i;
     int  c;
 
+    //TODO: inserir aqui o codigo inicial (pushq %rbp etc)
+    memcpy(codigo, cod_pilha, 4); //copia instrucao de ativacao para o vetor de codigo
+	memcpy((unsigned char*)(codigo + 4), cod_sub_rsp, 4); //copia instrucao de alocacao de espaço para o vetor de codigo
+	pos += 9; //atualiza posicao final do vetor de codigo
+
+
 	while ((c = fgetc(f)) != EOF) {
     switch (c) {
       case 'r': { /* retorno */
