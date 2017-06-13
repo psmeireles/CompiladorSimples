@@ -6,7 +6,7 @@
 //TODO: [GABRIELLE] trocar o retorno das funcoes que retornam uma alocação de memoria local para void (passando endereço de codigo como parametro) ou retornando e depois dando free no espaço alocado
 
 typedef int (*funcp) ();
-//[GABRIELLE] ta dando warning aqui não sei pq...
+//[GABRIELLE] ta dando warning pq essas variaveis nao estao sendo usadas
 static unsigned char cod_ret[5] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };							/* ret */
 static unsigned char cod_pilha[4] = { 0x55, 0x48, 0x89, 0xe5 };		/* pushq %rbp   movq %rsp, %rbp */
 static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };		/* subq $16, %rsp */
@@ -16,7 +16,6 @@ void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos){
     fscanf(f, "et%c", &c0);
 	memcpy((unsigned char*)(codigo + *pos - 1), cod_ret, 5);
 	*pos += 5;
-
 }
 
 void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int inx) { // Recebe do operador e o segundo termo da atribuicao
@@ -218,17 +217,19 @@ static void error (const char *msg, int line) {
 
 funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
-	int line = 1, pos = 0;
+	int line = 1, pos = 0, i;
     int  c;
 
 	while ((c = fgetc(f)) != EOF) {
     switch (c) {
       case 'r': { /* retorno */
+      	printf("ENTROU NO RET\n");
         gera_cod_ret(f, codigo, &pos);
         break;
       }
       case 'v': 
       case 'p': {  /* atribuicao */
+      	printf("ENTROU NA ATRIBUICAO \n");
 		gera_cod_atribuicao(f, codigo, &pos, c);
         break;
       }
@@ -245,5 +246,14 @@ funcp compila (FILE *f){
     line ++;
     fscanf(f, " ");
   }
+
+  //DUMP CODIGO
+  printf("\n");
+  for (i = 0; i < pos; i++){
+  	printf("%x ", codigo[i]);
+  }
+  printf("\n");
+
+
   return 0;
 }
