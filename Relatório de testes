@@ -1,0 +1,210 @@
+Testes do compilador simples:
+
+v = c + c:
+v1 = $1 + $1
+ret
+Resultado: Correto. Imprimiu 2.
+
+v = c - c:
+v1 = $3 - $1
+ret
+Resultado: Correto. Imprimiu 2.
+
+v = c * c:
+v1 = $2 * $-3
+ret
+Resultado: Correto. Imprimiu -6.
+
+v = p + c:
+v1 = p1 + $2
+ret
+Resultado: Correto. Passei 1 e imprimiu 3.
+
+v = p - c:
+v1 = p1 - $6
+ret
+Resultado: Correto. Passei 1 e imprimiu -5.
+
+v = p * c:
+v1 = p1 * $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 0.
+
+v = c + p:
+v1 = $2 + p1
+ret
+Resultado: Correto. Passei 1 e imprimiu 3.
+
+v = c - p:
+v1 = $6 - p1
+ret
+Resultado: Correto. Passei 1 e imprimiu 5.
+
+v = c * p:
+v1 = $0 * p1
+ret
+Resultado: Correto. Passei 1 e imprimiu 0.
+
+v = p + p:
+v = p - p:
+v = p * p:
+v = v + v:
+v = v - v:
+v2 = p1 + p2	// v2 = 3
+v3 = p2 - p1	// v3 = 1
+v4 = p1 * p1	// v4 = 1
+v1 = v2 + v3	// v1 = 4
+v1 = v1 - v4	// v1 = 3
+ret
+Resultado: Correto. Passei 1 e 2 e imprimiu 0.
+
+v = v + c:
+v = v - c:
+v = v * c:
+v2 = $1 + $0	// v2 = 1
+v2 = v2 * $2	// v2 = 2
+v3 = v2 + $1	// v3 = 3
+v4 = v3 - $7	// v4 = -4
+v1 = v4 + $0	// v1 = -4
+ret
+Resultado: Correto. Imprimiu -4.
+
+
+v = c + v:
+v = c - v:
+v = c * v:
+v = v * v:
+v2 = $1 + $0	// v2 = 1
+v2 = $2 * v2	// v2 = 2
+v3 = $1 + v2	// v3 = 3
+v4 = $7 - v3	// v4 = 4
+v1 = v4 * v2	// v1 = 8
+ret
+Resultado: Correto. Imprimiu 8.
+
+
+
+p = c + c:
+p1 = $1 + $0
+v1 = p1 + $0
+ret
+Resultado: Correto. Imprimiu 1.
+
+p = c - c:
+p1 = $3 - $1
+v1 = p1 + $0
+ret
+Resultado: Correto. Imprimiu 2.
+
+p = c * c:
+p1 = $1 * $2
+v1 = p1 + $0
+ret
+Resultado: Correto. Imprimiu 2.
+
+p = p + c:
+p1 = p1 + $1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = p - c:
+p1 = p1 - $1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 0.
+
+p = p * c:
+p1 = p1 * $2
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+
+p = c + p:
+p1 = $1 + p1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = c - p:
+p1 = $0 - p1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu -1.
+
+p = c * p:
+p1 = $2 * p1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = p + p:
+p = p - p:
+p = p * p:
+p1 = p1 + p2	// p1 = 3
+p2 = p2 - p1	// p2 = 2 - 3 = -1
+p1 = p1 * p2	// p1 = 3
+v1 = p1 + $0	// v1 = 3
+ret
+Resultado: Correto. Passei 1 e 2 e imprimiu -3.
+
+p = v + c:
+v1 = $1 + $0
+p1 = v1 + $1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = v - c:
+v1 = $1 + $0
+p1 = v1 - $1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 0.
+
+p = v * c:
+v1 = $1 + $0
+p1 = v1 * $2
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = c + v:
+v1 = $1 + $0
+p1 = $1 + v1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = c - v:
+v1 = $1 + $0
+p1 = $2 - v1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 1.
+
+p = c * v:
+v1 = $1 + $0
+p1 = $2 * v1
+v1 = p1 + $0
+ret
+Resultado: Correto. Passei 1 e imprimiu 2.
+
+p = v + v:
+p = v - v:
+v2 = $2 + $0	// v2 = 2
+v3 = $3 + $0	// v2 = 3
+p1 = v2 + v3	// p1 = 2 + 3 = 5
+p2 = v2 - v3	// p2 = 2 - 3 = -1
+v1 = p1 + p2	// v1 = 5 + (-1) = 4
+ret
+Resultado: Correto. Imprimiu 4.
+
+p = v * v:
+v2 = $2 + $0
+v3 = $3 + $0
+p1 = v2 * v3
+v1 = p1 + $0
+ret
+Resultado: Correto. Imprimiu 6.
