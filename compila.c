@@ -3,6 +3,14 @@
 #include<string.h>
 #include "compila.h"
 
+void dump(void *p, int n) {
+  unsigned char *p1 = (unsigned char *)p;
+  while (n--) {
+    printf("%p - %02x\n",p1,*p1);
+    p1++;
+  }
+}
+
 //TODO: [GABRIELLE] trocar o retorno das funcoes que retornam uma alocação de memoria local para void (passando endereço de codigo como parametro) ou retornando e depois dando free no espaço alocado
 
 typedef int (*funcp) ();
@@ -218,8 +226,12 @@ static void error (const char *msg, int line) {
 funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
 	int line = 1, pos = 0, i;
-    int  c;
+	int  c;
 
+//Inicializando o vetor
+    for(j = 0; j < 500; j++)
+	codigo[j] = 0;
+	
     //TODO: inserir aqui o codigo inicial (pushq %rbp etc)
     memcpy(codigo, cod_pilha, 4); //copia instrucao de ativacao para o vetor de codigo
 	memcpy((unsigned char*)(codigo + 4), cod_sub_rsp, 4); //copia instrucao de alocacao de espaço para o vetor de codigo
@@ -254,12 +266,7 @@ funcp compila (FILE *f){
   }
 
   //DUMP CODIGO
-  printf("\n");
-  for (i = 0; i < pos; i++){
-  	printf("%x ", codigo[i]);
-  }
-  printf("\n");
-
+  dump(codigo, pos-1);
 
   return 0;
 }
