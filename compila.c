@@ -218,6 +218,54 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
 
 }
 
+void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, long *endPosJmp, int *endDestino, int *posJmp){
+	char varp;
+    int idx, linha, size = 0;
+    unsigned char codigo_desvio[12]; //tamanho maximo do codigo de desvio
+
+	fscanf(f, "f %c%d %d", &varp, &idx, &linha);
+
+	switch (varp){ // Checa primeiro termo da atribuicao
+		case 'p': {
+			codigo_desvio[0] = 0x83;
+			codigo_desvio[2] = 0x00;
+			if (idx == 1) 
+				codigo_desvio[1] = 0xff; 
+			else //idx == 2
+				codigo_desvio[1] = 0xfe;
+			size = 3;
+			break;
+		}
+		case 'v': {
+			codigo_desvio[0] = 0x8b;
+			codigo_desvio[1] = 0x55;
+			codigo_desvio[2] = 0xff + 1 - 4*(unsigned char)idx;
+			
+			codigo_desvio[3] = 0x83;
+			codigo_desvio[4] = 0xfa;
+			codigo_desvio[5] = 0x00;
+
+			size = 6;
+			break;
+		}
+	}
+
+	codigo_desvio[size] = 0x0f;
+	codigo_desvio[size + 1] = 0x85;
+	size += 2;
+
+	memcpy((unsigned char*)(codigo+ *pos - 1), codigo_desvio, size);
+	*pos += size; //atualiza a posicao final do vetor de codigo
+	
+	idxJmp[*posJmp] = *pos; //grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
+	*pos += 4; //pula os quatro bytes seguintes
+	endPosJmp[*posJmp] = (long)&codigo[*pos]; //guarda o endereço da instrução logo depois da instrução de desvio
+	endDestino[*posJmp] = linha; //guarda numero da linha para onde o jmp vai
+	(*posJmp)++;
+
+
+}
+
 static void error (const char *msg, int line) {
   fprintf(stderr, "erro %s na linha %d\n", msg, line);
   exit(EXIT_FAILURE);
@@ -225,12 +273,24 @@ static void error (const char *msg, int line) {
 
 funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
-	int line = 1, pos = 0, i;
-	int  c;
+	int linha = 1, pos = 0, i, aux, endDestino[500], idxJmp[500], countJmp = 0;
+	char c;
+	long endLinhas[500], endPosJmp[500], endDif;
+/* 
+	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
+	endJmp = array que armazena o endereco da posicao do codigo que precisa preencher com o endereco do jump
+	indexJmp = array que armazena o endereco da posicao do codigo onde esta a primeira instrucao pos jump
+*/
 
 //Inicializando o vetor
-    for(j = 0; j < 500; j++)
-	codigo[j] = 0;
+    for(i = 0; i < 500; i++){
+    	codigo[i] = 0;
+    	/*
+    	idxJmp[i] = 0; //nao sei se precisa inicializar com zeros
+    	endPosJmp = 0; //nao sei se precisa inicializar com zeros
+    	endDestino[i] = 0; //nao sei se precisa inicializar com zeros
+    	*/
+    }
 	
     //TODO: inserir aqui o codigo inicial (pushq %rbp etc)
     memcpy(codigo, cod_pilha, 4); //copia instrucao de ativacao para o vetor de codigo
@@ -239,34 +299,47 @@ funcp compila (FILE *f){
 
 
 	while ((c = fgetc(f)) != EOF) {
-    switch (c) {
-      case 'r': { /* retorno */
-      	printf("ENTROU NO RET\n");
-        gera_cod_ret(f, codigo, &pos);
-        break;
-      }
-      case 'v': 
-      case 'p': {  /* atribuicao */
-      	printf("ENTROU NA ATRIBUICAO \n");
-		gera_cod_atribuicao(f, codigo, &pos, c);
-        break;
-      }
-      case 'i': { /* desvio */
-        char var0;
-        int idx0, num;
-        if (fscanf(f, "f %c%d %d", &var0, &idx0, &num) != 3)
-            error("Comando Invalido", line);
-          printf("if %c%d %d\n", var0, idx0, num);
-        break;
-      }
-      default: error("Comando Desconhecido", line);
-    }
-    line ++;
-    fscanf(f, " ");
-  }
+		endLinhas[linha - 1] = (long)(&codigo[pos]); //verificar se é a posicao atual ou a posicao seguinte que precisa ser guardada
+    	
+    	printf("linha atual %d  %d  %x \n", linha, pos, &codigo[pos]);
+
+	    switch (c) {
+	      case 'r': { /* retorno */
+	      	printf("ENTROU NO RET\n");
+	        gera_cod_ret(f, codigo, &pos);
+	        break;
+	      }
+	      case 'v': 
+	      case 'p': {  /* atribuicao */
+	      	printf("ENTROU NA ATRIBUICAO \n");
+			gera_cod_atribuicao(f, codigo, &pos, c);
+	        break;
+	      }
+	      case 'i': { /* desvio */
+	      printf("ENTROU NO DESVIO \n");
+	        gera_cod_desvio (f, codigo, &pos, idxJmp, endPosJmp, endDestino, &countJmp);
+	        break;
+	      }
+	      default: error("Comando Desconhecido", linha);
+	    }
+	    linha ++;
+	   	fscanf(f, " ");
+	}
 
   //DUMP CODIGO
   dump(codigo, pos-1);
+
+//preenche o vetor com os endereços q estao faltando
+	for (i=0; i<countJmp; i++){
+		linha = endLinhas[i]; //pega a linha pra qual sera feito o desvio do jmp
+		aux = endLinhas[linha - 1]; //descobre qual o endereco onde comeca a linha da instrucao de destino
+		endDif = aux - endPosJmp[i]; //calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
+		aux = idxJmp[i]; //pega a posicao do codigo q sera preenchida com endLinha
+		codigo[aux] = (unsigned char)endDif; //armazena o 1o byte do dif
+		codigo[aux+1] = (unsigned char)(endDif>>8); //armazena o 2o byte
+		codigo[aux+2] = (unsigned char)(endDif>>16); //armazena o 3o byte
+		codigo[aux+3] = (unsigned char)(endDif>>24); //armazena o 4o byte
+	}
 
   return 0;
 }
