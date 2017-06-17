@@ -8,14 +8,14 @@ int main (void) {
   FILE *myfp;
   int a;
 
-	if ((myfp = fopen ("testeOperacoes", "r")) == NULL) {
+	if ((myfp = fopen ("fatorialParametro", "r")) == NULL) {
     	perror ("nao conseguiu abrir arquivo!");
     	exit(1);
 	}
 
 	f = compila(myfp);
 
-	a = (*f)(3,2);
+	a = (*f)(3);
 	printf("%d", a);
 
 
