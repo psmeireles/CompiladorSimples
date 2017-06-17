@@ -218,7 +218,7 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
 
 }
 
-void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, long *endPosJmp, int *endDestino, int *posJmp){
+void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, int *endPosJmp, int *endDestino, int *posJmp){
 	char varp;
     int idx, linha, size = 0;
     unsigned char codigo_desvio[12]; //tamanho maximo do codigo de desvio
@@ -259,7 +259,7 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, l
 	
 	idxJmp[*posJmp] = *pos; //grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
 	*pos += 4; //pula os quatro bytes seguintes
-	endPosJmp[*posJmp] = (long)&codigo[*pos]; //guarda o endereço da instrução logo depois da instrução de desvio
+	endPosJmp[*posJmp] = (int)&codigo[*pos]; //guarda o endereço da instrução logo depois da instrução de desvio
 	endDestino[*posJmp] = linha; //guarda numero da linha para onde o jmp vai
 	(*posJmp)++;
 
@@ -275,7 +275,7 @@ funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*500);
 	int linha = 1, pos = 0, i, aux, linhaDestino[500], idxJmp[500], countJmp = 0;
 	char c;
-	long endLinhas[500], endPosJmp[500], endDif;
+	int endLinhas[500], endPosJmp[500], endDif;
 /* 
 	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
 	endJmp = array que armazena o endereco da posicao do codigo que precisa preencher com o endereco do jump
@@ -299,9 +299,9 @@ funcp compila (FILE *f){
 
 
 	while ((c = fgetc(f)) != EOF) {
-		endLinhas[linha - 1] = (long)(&codigo[pos-1]); //verificar se é a posicao atual ou a posicao seguinte que precisa ser guardada
+		endLinhas[linha - 1] = (int)&codigo[pos]; //verificar se é a posicao atual ou a posicao seguinte que precisa ser guardada
     	
-    	printf("linha atual %d  %d  %x \n", linha, pos, &codigo[pos]);
+    	printf("\nlinha atual %d  %d  %x \n", linha, pos, &codigo[pos]);
 
 	    switch (c) {
 	      case 'r': { /* retorno */
@@ -327,7 +327,7 @@ funcp compila (FILE *f){
 	}
 
   //DUMP CODIGO
-	printf("COUNTJUMP: %d \n", countJmp);
+	printf("\nCOUNTJUMP: %d \n", countJmp);
 
 //preenche o vetor com os endereços q estao faltando
 	for (i=0; i<countJmp; i++){
@@ -335,8 +335,9 @@ funcp compila (FILE *f){
 		printf("LINHA DESTINO: %d \n", linha);
 		aux = endLinhas[linha-1]; //descobre qual o endereco onde comeca a linha da instrucao de destino
 		printf("ENDERECO DESTINO: %x \n", aux);
+		printf("ENDERECO INSTRUCAO POS JUMP %lx \n", endPosJmp[i]);
 		endDif = aux - endPosJmp[i]; //calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
-		printf("DIFERENCA DOS ENDERECOS: %x \n", endDif);
+		printf("DIFERENCA DOS ENDERECOS: %lx \n", endDif);
 		aux = idxJmp[i]; //pega a posicao do codigo q sera preenchida com endLinha
 		codigo[aux-1] = (unsigned char)endDif; //armazena o 1o byte do dif
 		codigo[aux] = (unsigned char)(endDif>>8); //armazena o 2o byte
