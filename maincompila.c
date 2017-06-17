@@ -8,7 +8,7 @@ int main (void) {
   FILE *myfp;
   int a;
 
-	if ((myfp = fopen ("programaif", "r")) == NULL) {
+	if ((myfp = fopen ("simplesIF", "r")) == NULL) {
     	perror ("nao conseguiu abrir arquivo!");
     	exit(1);
 	}
