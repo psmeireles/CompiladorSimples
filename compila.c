@@ -331,7 +331,7 @@ funcp compila (FILE *f){
 
 //preenche o vetor com os endereços q estao faltando
 	for (i=0; i<countJmp; i++){
-		linha = endLinhas[i]; //pega a linha pra qual sera feito o desvio do jmp
+		linha = endDestino[i]; //pega a linha pra qual sera feito o desvio do jmp
 		aux = endLinhas[linha - 1]; //descobre qual o endereco onde comeca a linha da instrucao de destino
 		endDif = aux - endPosJmp[i]; //calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
 		aux = idxJmp[i]; //pega a posicao do codigo q sera preenchida com endLinha
@@ -341,5 +341,5 @@ funcp compila (FILE *f){
 		codigo[aux+3] = (unsigned char)(endDif>>24); //armazena o 4o byte
 	}
 
-  return 0;
+  return (funcp) codigo;
 }
