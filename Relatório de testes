@@ -23,8 +23,6 @@ DIF: é a diferenca do endereco da linha pra onde vai o desvio e endereco da pri
 6) Acessar um elemento do vetor de endereco de linha através do numero da linha de desvio
 7) Subtrair o endereco da instrucao pós instrução de desvio do endereço da linha de desvio 
 
-
-
 Testes do compilador:
 (Os comentários não fazem parte da linguagem. Eles apenas mostram o desenvolvimento da função para se obter o valor esperado.)
 
