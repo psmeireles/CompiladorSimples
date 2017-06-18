@@ -8,7 +8,7 @@ int main (void) {
   FILE *myfp;
   int a;
 
-	if ((myfp = fopen ("fatorialParametro", "r")) == NULL) {
+	if ((myfp = fopen ("squad", "r")) == NULL) {
     	perror ("nao conseguiu abrir arquivo!");
     	exit(1);
 	}
