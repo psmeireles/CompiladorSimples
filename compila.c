@@ -241,10 +241,10 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, i
 	codigo_desvio[size + 1] = 0x85;
 	size += 2;
 
-	memcpy((unsigned char*)(codigo+ *pos - 1), codigo_desvio, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo + *pos - 1), codigo_desvio, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 	
-	idxJmp[*countJmp] = *pos; // Grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
+	idxJmp[*countJmp] = *pos - 1; // Grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
 	*pos += 4; // Pula os quatro bytes seguintes
 	endPosJmp[*countJmp] = (int)&codigo[*pos]; // Guarda o endereço da instrução logo depois da instrução de desvio
 	linhaDestino[*countJmp] = linha; // Guarda numero da linha para onde o jmp vai
@@ -309,10 +309,10 @@ funcp compila (FILE *f){
 		aux = endLinhas[linha-1];						// Descobre qual o endereco onde comeca a linha da instrucao de destino
 		endDif = aux - endPosJmp[i];					// Calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
 		aux = idxJmp[i];								// Pega a posicao do codigo q sera preenchida com endLinha
-		codigo[aux-1] = (unsigned char)endDif;			// Armazena o 1o byte do dif
-		codigo[aux] = (unsigned char)(endDif>>8);		// Armazena o 2o byte
-		codigo[aux+1] = (unsigned char)(endDif>>16);	// Armazena o 3o byte
-		codigo[aux+2] = (unsigned char)(endDif>>24);	// Armazena o 4o byte
+		codigo[aux] = (unsigned char)endDif;			// Armazena o 1o byte do dif
+		codigo[aux+1] = (unsigned char)(endDif>>8);		// Armazena o 2o byte
+		codigo[aux+2] = (unsigned char)(endDif>>16);	// Armazena o 3o byte
+		codigo[aux+3] = (unsigned char)(endDif>>24);	// Armazena o 4o byte
 	}
 
   return (funcp) codigo;
