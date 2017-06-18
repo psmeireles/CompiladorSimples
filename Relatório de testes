@@ -82,7 +82,7 @@ v4 = p1 * p1	// v4 = 1
 v1 = v2 + v3	// v1 = 4
 v1 = v1 - v4	// v1 = 3
 ret
-Resultado: Correto. Passei 1 e 2 e imprimiu 0.
+Resultado: Correto. Passei 1 e 2 e imprimiu 3.
 
 v = v + c:
 v = v - c:
@@ -234,3 +234,77 @@ p1 = v2 * v3
 v1 = p1 + $0
 ret
 Resultado: Correto. Imprimiu 6.
+
+Testes de intrucoes de desvio:
+Foi testado as funções exemplo na página da disciplina e funções criadas por nós para testar o resto dos possiveis casos de uso
+
+1. Fatorial
+v1 = $0 + $1
+if p1 4
+ret
+v1 = v1 * p1
+p1 = p1 - $1
+if p1 4
+ret
+
+Resultados:
+p1 = 3 --> imprimiu 6 (Correto); 
+p1 = 4 --> imprimiu 24 (Correto); 
+p1 = 11 --> imprimiu 479001600 (Correto);
+
+2. Squad
+
+v1 = $0 + $0          // 1: sum = 0
+v2 = $1 + $0          // 2: i = 1
+p1 = p1 + $1          // 3: x = x + 1
+v3 = p1 - v2          // 4: aux = x - i  (será zero se x == i)
+if v3 7               // 5: if (aux != 0) desvia para linha 7
+ret                   // 6: retorna sum
+v3 = v2 * v2          // 7: aux = i * i
+v1 = v1 + v3          // 8: sum = sum + aux
+v2 = v2 + $1          // 9: i = i + 1
+if v2 4               // 10: if (i != 0) desvia para linha 4 (sempre desviará)
+
+Resultados:
+p1 = 3 --> imprimiu 14 (Correto)
+p1 = 4 --> imprimiu 385 (Correto)
+p1 = 17 --> imprimiu 1785 (Correto)
+
+3. Menor Positivo
+Funcao que recebe dois parametros (positivos maiores que zero) e retorna o menor
+
+v2 = p1 + $0
+v3 = p2 + $0
+p1 = p1 - $1
+if p1 7
+v1 = v2 + $0
+ret
+p2 = p2 - $1
+if p2 3
+v1 = v3 + $0
+ret
+
+Resultados:
+p1 = 17, p2 = 19 --> imprimiu 17 (Correto)
+p1 = 100, p2 = 99 --> imprimiu 99 (Correto)
+p1 = 340829, p2 = 104983 --> imprimiu 104983 (Correto)
+
+4. Menor Positivo (local)
+Alteração da menor positivo para testar variavel local (v1 e v4) -> retorna o indice da variavel de menor valor
+
+v1 = $1000 + $0
+v4 = $10000 + $0
+v1 = v1 - $1
+if v1 7
+v1 = $1 + $0
+ret
+v4 = v4 - $1
+if v4 3
+v1 = $4 + $0
+ret
+
+Resultados:
+v1 = 1000, v4 = 10000 --> imprimiu 1 (Correto)
+v1 = 10000, v4 = 1000 --> imprimiu 4 (Correto)
+
+
