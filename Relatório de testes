@@ -250,7 +250,7 @@ ret
 Resultados:
 p1 = 3 --> imprimiu 6 (Correto); 
 p1 = 4 --> imprimiu 24 (Correto); 
-p1 = 11 --> imprimiu 479001600 (Correto);
+p1 = 11 --> imprimiu 39916800 (Correto);
 
 2. Squad
 
@@ -267,7 +267,7 @@ if v2 4               // 10: if (i != 0) desvia para linha 4 (sempre desviará)
 
 Resultados:
 p1 = 3 --> imprimiu 14 (Correto)
-p1 = 4 --> imprimiu 385 (Correto)
+p1 = 4 --> imprimiu 30 (Correto)
 p1 = 17 --> imprimiu 1785 (Correto)
 
 3. Menor Positivo
