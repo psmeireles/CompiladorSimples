@@ -1,4 +1,32 @@
-Testes do compilador simples:
+
+O compilador funcionou corretamente.
+
+Na atribuição utilizou-se o seguinte algoritmo para padronizar as operações:
+a = b +|-|* c
+1) Guardar b no %edx
+2) Fazer a operação com c, armazenando o resultado no %edx
+3) Mover o resultado do %edx para o registrador correspondente ao a
+
+No retorno, o algoritmo foi o seguinte:
+1) Mover o valor correspondente a v1 para o registrador %eax
+2) Desalocae a pilha
+3) Retornar o valor
+
+E para o desvio:
+DIF: é a diferenca do endereco da linha pra onde vai o desvio e endereco da primeira instrucao apos instrucao do desvio (&linha - &instrucaoPósDesvio)
+1) Guardar o endereço de todas as linhas lidas no arquivo
+2) Guardar o endereco da posicao do byte que precisa ser preenchido com o endereço de desvio em um vetor de endereco de posicoes
+3) Guardar o endereço da instrução logo depois da instrução de desvio em um vetor de endereços pós desvio
+4) Guardar o numero da linha para onde o controle vai desviar (lido do arquivo) em um vetor de linhas de desvio
+5) Finalizar a traducao de todo o codigo no arquivo, pulando os bytes do DIF ou preenchendo com 0x00
+7) Enquanto houverem valores no vetor de endereço de posicoes:
+6) Acessar um elemento do vetor de endereco de linha através do numero da linha de desvio
+7) Subtrair o endereco da instrucao pós instrução de desvio do endereço da linha de desvio 
+
+
+
+Testes do compilador:
+(Os comentários não fazem parte da linguagem. Eles apenas mostram o desenvolvimento da função para se obter o valor esperado.)
 
 v = c + c:
 v1 = $1 + $1
