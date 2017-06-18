@@ -250,7 +250,7 @@ ret
 Resultados:
 p1 = 3 --> imprimiu 6 (Correto); 
 p1 = 4 --> imprimiu 24 (Correto); 
-p1 = 11 --> imprimiu 39916800 (Correto);
+p1 = 12 --> imprimiu 479001600 (Correto);
 
 2. Squad
 
