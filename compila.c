@@ -14,7 +14,7 @@ static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };	// subq $16, %
 void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos){
 	char c0;
     fscanf(f, "et%c", &c0);
-	memcpy((unsigned char*)(codigo + *pos - 1), cod_ret, 5);
+	memcpy((unsigned char*)(codigo + *pos), cod_ret, 5);
 	*pos += 5;
 }
 
@@ -131,7 +131,7 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 		}
 	}
 
-	memcpy((unsigned char*)(codigo_in + *pos - 1), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo_in + *pos), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza posicao final do vetor de codigo
 
 }
@@ -154,7 +154,7 @@ void move_lugar_certo(unsigned char* codigo_in, int *pos, char var, int inx){	//
 		size = 3;
 	}
 
-	memcpy((unsigned char*)(codigo_in + *pos - 1), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo_in + *pos), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 }
 
@@ -195,7 +195,7 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
 			break;
 		}
 	}
-	memcpy((unsigned char*)(codigo+ *pos - 1), cod_atribuicao, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo + *pos), cod_atribuicao, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 
 	// Fazendo a operacao no %edx
@@ -241,10 +241,10 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, i
 	codigo_desvio[size + 1] = 0x85;
 	size += 2;
 
-	memcpy((unsigned char*)(codigo + *pos - 1), codigo_desvio, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo + *pos), codigo_desvio, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 	
-	idxJmp[*countJmp] = *pos - 1; // Grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
+	idxJmp[*countJmp] = *pos; // Grava a posicao do primeiro byte do codigo que será preenchido com a diferenca dos enderecos
 	*pos += 4; // Pula os quatro bytes seguintes
 	endPosJmp[*countJmp] = (int)&codigo[*pos]; // Guarda o endereço da instrução logo depois da instrução de desvio
 	linhaDestino[*countJmp] = linha; // Guarda numero da linha para onde o jmp vai
@@ -270,6 +270,7 @@ funcp compila (FILE *f){
 	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
 */
 
+printf("COMPILA ATUAL");
 // Inicializando o vetor
     for(i = 0; i < 768; i++){
     	codigo[i] = 0;
@@ -277,7 +278,7 @@ funcp compila (FILE *f){
 	
     memcpy(codigo, cod_pilha, 4); // Copia instrucao de ativacao para o vetor de codigo
 	memcpy((unsigned char*)(codigo + 4), cod_sub_rsp, 4); // Copia instrucao de alocacao de espaço para o vetor de codigo
-	pos += 9; // Atualiza posicao final do vetor de codigo
+	pos += 8; // Atualiza posicao final do vetor de codigo
 
 
 	while ((c = fgetc(f)) != EOF) {
