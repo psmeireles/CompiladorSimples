@@ -1,7 +1,7 @@
 v1 = $0 + $1
 if p4 4
 ret
-v1 = v1 * p1
+v1 = v1 * p4
 p4 = p4 - $1
 if p4 4
 ret
