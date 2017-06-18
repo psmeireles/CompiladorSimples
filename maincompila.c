@@ -15,10 +15,13 @@ int main (void) {
 
 	f = compila(myfp);
 
-	a = (*f)(30,28);
+	a = (*f)();
 	printf("%d", a);
 
 
   fclose(myfp);
   return 0;
 }
+/*1932053504*/
+/*1278945280*/
+/*2004310016*/
