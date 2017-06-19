@@ -321,10 +321,10 @@ printf("COMPILA ATUAL");
 		endereco = endLinhas[linha-1];						// Descobre qual o endereco onde comeca a linha da instrucao de destino
 		endDif = endereco - endPosJmp[i];					// Calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
 		posPreenche = idxJmp[i];								// Pega a posicao do codigo q sera preenchida com endLinha
-		codigo[aux] = (unsigned char)endDif;			// Armazena o 1o byte do dif
-		codigo[aux+1] = (unsigned char)(endDif>>8);		// Armazena o 2o byte
-		codigo[aux+2] = (unsigned char)(endDif>>16);	// Armazena o 3o byte
-		codigo[aux+3] = (unsigned char)(endDif>>24);	// Armazena o 4o byte
+		codigo[posPreenche] = (unsigned char)endDif;			// Armazena o 1o byte do dif
+		codigo[posPreenche+1] = (unsigned char)(endDif>>8);		// Armazena o 2o byte
+		codigo[posPreenche+2] = (unsigned char)(endDif>>16);	// Armazena o 3o byte
+		codigo[posPreenche+3] = (unsigned char)(endDif>>24);	// Armazena o 4o byte
 	}
 
   return (funcp) codigo;
