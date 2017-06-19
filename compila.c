@@ -309,7 +309,9 @@ funcp compila (FILE *f){
 /* 	
 	countJmp = quantidade de jumps que são feitos no codigo
 	linhaDestino = linha para qual sera feito o desvio do jmp
+	idxJmp = array que armazena o indice do codigo que precisa preencher com o endDif
 	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
+	endPosJmp = array que armazena o endereco da posicao do codigo onde esta a primeira instrucao pós jump
 	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
 */
 
