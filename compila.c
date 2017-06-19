@@ -49,7 +49,7 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 				size = 3;
 			}
 			else { // Constante
-				if(inx < 256) {	
+				if(inx < 128) {	
 					codigo[0] = 0x83;
 					codigo[1] = 0xc2;
 					codigo[2] = (unsigned char) inx;
@@ -84,7 +84,7 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 				size = 3;
 			}
 			else { // Constante
-				if(inx < 256) { 
+				if(inx < 128) { 
 					codigo[0] = 0x83;
 					codigo[1] = 0xea;
 					codigo[2] = (char) inx;
