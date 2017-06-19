@@ -269,12 +269,14 @@ funcp compila (FILE *f){
 	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*768);	
 	// 768 -> Primeiro múltiplo de 64 acima de 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
 	//64 -> primeiro multiplo de 64 acima de 50 (numero maximo de linhas)
-	int linha = 1, pos = 0, i, aux, countJmp = 0, linhaDestino[64], idxJmp[64];
+	int linha = 1, pos = 0, i, posPreenche, countJmp = 0, linhaDestino[64], idxJmp[64];
 	long endLinhas[64], endPosJmp[64], endDif, endereco;
 	char c;
 /* 	
-	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
+	countJmp = quantidade de jumps que são feitos no codigo
+	linhaDestino = linha para qual sera feito o desvio do jmp
 	idxJmp = array que armazena o indice do codigo que precisa preencher com o endDif
+	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
 	endPosJmp = array que armazena o endereco da posicao do codigo onde esta a primeira instrucao pós jump
 	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
 */
@@ -318,7 +320,7 @@ printf("COMPILA ATUAL");
 		linha = linhaDestino[i];						// Pega a linha para qual sera feito o desvio do jmp
 		endereco = endLinhas[linha-1];						// Descobre qual o endereco onde comeca a linha da instrucao de destino
 		endDif = endereco - endPosJmp[i];					// Calcula a diferenca do endereco de destino e endereco da instrucao apos o jmp
-		aux = idxJmp[i];								// Pega a posicao do codigo q sera preenchida com endLinha
+		posPreenche = idxJmp[i];								// Pega a posicao do codigo q sera preenchida com endLinha
 		codigo[aux] = (unsigned char)endDif;			// Armazena o 1o byte do dif
 		codigo[aux+1] = (unsigned char)(endDif>>8);		// Armazena o 2o byte
 		codigo[aux+2] = (unsigned char)(endDif>>16);	// Armazena o 3o byte
