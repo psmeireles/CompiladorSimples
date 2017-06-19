@@ -281,7 +281,6 @@ funcp compila (FILE *f){
 	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
 */
 
-printf("COMPILA ATUAL");
 // Inicializando o vetor
     for(i = 0; i < 768; i++){
     	codigo[i] = 0;
