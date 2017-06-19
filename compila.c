@@ -1,9 +1,7 @@
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "compila.h"
-
-#define MAXLINHA 14
 
 typedef int (*funcp) ();
 
@@ -35,27 +33,34 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 		case '+': { // Adicao
 
 			if(var == 'p') { // Parametro
+				// addl %edi ou %esi, %edx
 				codigo[0] = 0x01;
-				if(inx == 1) // p1
+				if(inx == 1) // p1 (%edi)
 					codigo[1] = 0xfa;
-				else		 // p2
+				else		 // p2 (%esi)
 					codigo[1] = 0xf2;
+
 				size = 2;
 			}
 			else if(var == 'v') { // Variavel local
+				// addl -x(%rbp), %edx
 				codigo[0] = 0x03;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+
 				size = 3;
 			}
 			else { // Constante
 				if(inx < 128) {	
+					// addl $0xXX, %edx
 					codigo[0] = 0x83;
 					codigo[1] = 0xc2;
 					codigo[2] = (unsigned char) inx;
+
 					size = 3;
 				}
 				else {
+					// addl $0xXXXXXXXX, %edx
 					codigo[0] = 0x81;
 					codigo[1] = 0xc2;
 					codigo[2] = (unsigned char) (inx & 0xff);
@@ -70,33 +75,41 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 		case '-': { // Subtracao
 			
 			if(var == 'p') { // Parametro
+				// subl %edi ou %esi, %edx
 				codigo[0] = 0x29;
-				if(inx == 1) // p1
+				if(inx == 1) // p1 (%edi)
 					codigo[1] = 0xfa;
-				else		 // p2
+				else		 // p2 (%esi)
 					codigo[1] = 0xf2;
+
 				size = 2;
 			}
 			else if(var == 'v') { // Variavel local
+				// subl -x(%rbp), %edx
 				codigo[0] = 0x2b;
 				codigo[1] = 0x55;
 				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+
 				size = 3;
 			}
 			else { // Constante
 				if(inx < 128) { 
+					// subl $0xXX, %edx
 					codigo[0] = 0x83;
 					codigo[1] = 0xea;
 					codigo[2] = (char) inx;
+
 					size = 3;
 				}
 				else {
+					// subl $0xXXXXXXXX, %edx
 					codigo[0] = 0x81;
 					codigo[1] = 0xea;
 					codigo[2] = (unsigned char) (inx & 0xff);
 					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
 					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
 					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+
 					size = 6;
 				}
 			}
@@ -105,35 +118,43 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 		case '*': { // Multiplicacao
 			
 			if(var == 'p') { // Parametro
+				// imull %edi ou %esi, %edx
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
-				if(inx == 1) // p1
+				if(inx == 1) // p1 (%edi)
 					codigo[2] = 0xd7;
-				else		 // p2
+				else		 // p2 (%esi)
 					codigo[2] = 0xd6;
+
 				size = 3;
 			}
 			else if(var == 'v') { // Variavel local
+				// imull -x(%rbp), %edx
 				codigo[0] = 0x0f;
 				codigo[1] = 0xaf;
 				codigo[2] = 0x55;
 				codigo[3] = 0xff + 1 - 4*(unsigned char)inx;
+
 				size = 4;
 			}
 			else { // Constante
 				if(inx < 128) { 
+					// imull $0xXX, %edx
 					codigo[0] = 0x6b;
 					codigo[1] = 0xd2;
 					codigo[2] = (char) inx;
+
 					size = 3;
 				}
 				else {
+					// imull $0xXXXXXXXX, %edx
 					codigo[0] = 0x69;
 					codigo[1] = 0xd2;
 					codigo[2] = (inx & 0xff);
 					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
 					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
 					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+
 					size = 6;
 				}
 			}
@@ -151,15 +172,20 @@ void move_lugar_certo(unsigned char* codigo_in, int *pos, char var, int inx){	//
 
 	codigo[0] = 0x89;
 	if(var == 'p') { // Atribuicao em parametro
-		if(inx == 1) // p1
+		if(inx == 1) // p1 (%edi)
+			// movl %edx, %edi
 			codigo[1] = 0xd7; 
-		else		 // p2
+		else		 // p2 (%esi)
+			// movl %edx, %esi
 			codigo[1] = 0xd6;
+
 		size = 2;
 	}
 	else { // Atribuicao em variavel local
+		// movl %edx, -x(%rbp)
 		codigo[1] = 0x55;
 		codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+
 		size = 3;
 	}
 
@@ -179,30 +205,33 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c, int l
             
 	switch (var1){ // Checa primeiro termo da atribuicao
 		case 'p': { //Parametro
-			// Mover parametro pro %edx
+			// movl %edi ou %esi, %edx
 			cod_atribuicao[0] = 0x89;
-			if(idx1 == 1)	// p1
+			if(idx1 == 1)	// p1 (%edi)
 				cod_atribuicao[1] = 0xfa;
-			else			// p2
+			else			// p2 (%esi)
 				cod_atribuicao[1] = 0xf2;
+
 			size = 2;
 			break;
 		}
 		case 'v': { //Variavel local
-			// Mover variavel pro %edx
+			// movl -x(%rbp), %edx
 			cod_atribuicao[0] = 0x8b;
 			cod_atribuicao[1] = 0x55;
 			cod_atribuicao[2] = 0xff + 1 - 4*(unsigned char)idx1;
+
 			size = 3;
 			break;
 		}
 		case '$': { //Constante
-			// Mover constante pro %edx
+			// movl $0xXXXXXXXX, %edx
 			cod_atribuicao[0] = 0xba;
 			cod_atribuicao[1] = idx1 & 0xff;
 			cod_atribuicao[2] = (unsigned char) ((idx1 >> 8) & 0xff);
 			cod_atribuicao[3] = (unsigned char) ((idx1 >> 16) & 0xff);
 			cod_atribuicao[4] = (unsigned char) ((idx1 >> 24) & 0xff);
+
 			size = 5;
 			break;
 		}
@@ -229,19 +258,24 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, l
 
 	switch (varp){ // Checa primeiro termo da atribuicao
 		case 'p': { // Parametro
+			// cmpl $0, %edi ou %esi
 			codigo_desvio[0] = 0x83;
 			codigo_desvio[2] = 0x00;
-			if (idx == 1) // p1
+			if (idx == 1) // p1 (%edi)
 				codigo_desvio[1] = 0xff; 
-			else		  // p2
+			else		  // p2 (%esi)
 				codigo_desvio[1] = 0xfe;
+
 			size = 3;
 			break;
 		}
 		case 'v': { // Variavel local
+			// movl -x(%rbp), %edx
 			codigo_desvio[0] = 0x8b;
 			codigo_desvio[1] = 0x55;
 			codigo_desvio[2] = 0xff + 1 - 4*(unsigned char)idx;
+
+			// cmpl $0, %edx
 			codigo_desvio[3] = 0x83;
 			codigo_desvio[4] = 0xfa;
 			codigo_desvio[5] = 0x00;
@@ -251,6 +285,7 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, l
 		}
 	}
 
+	// jne linha
 	codigo_desvio[size] = 0x0f;
 	codigo_desvio[size + 1] = 0x85;
 	size += 2;
@@ -266,18 +301,15 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, l
 }
 
 funcp compila (FILE *f){
-	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*768);	
-	// 768 -> Primeiro múltiplo de 64 acima de 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
-	//64 -> primeiro multiplo de 64 acima de 50 (numero maximo de linhas)
-	int linha = 1, pos = 0, i, posPreenche, countJmp = 0, linhaDestino[64], idxJmp[64];
-	long endLinhas[64], endPosJmp[64], endDif, endereco;
+	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*(50*14 + 8));	
+	// 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
+	int linha = 1, pos = 0, i, posPreenche, countJmp = 0, linhaDestino[50], idxJmp[50];
+	long endLinhas[50], endPosJmp[50], endDif, endereco;
 	char c;
 /* 	
 	countJmp = quantidade de jumps que são feitos no codigo
 	linhaDestino = linha para qual sera feito o desvio do jmp
-	idxJmp = array que armazena o indice do codigo que precisa preencher com o endDif
 	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
-	endPosJmp = array que armazena o endereco da posicao do codigo onde esta a primeira instrucao pós jump
 	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
 */
 
