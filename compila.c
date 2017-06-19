@@ -11,9 +11,19 @@ static unsigned char cod_ret[5] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };	// movl -4(%
 static unsigned char cod_pilha[4] = { 0x55, 0x48, 0x89, 0xe5 };		// pushq %rbp	movq %rsp, %rbp 
 static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };	// subq $16, %rsp 
 
-void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos){
+static void error (const char *msg, int line) {
+  fprintf(stderr, "erro %s na linha %d\n", msg, line);
+  exit(EXIT_FAILURE);
+}
+
+void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos, int line){
 	char c0;
-    fscanf(f, "et%c", &c0);
+
+    if (fscanf(f, "et%c", &c0) != 1) {
+         error("comando invalido", line);
+        return;
+    }
+
 	memcpy((unsigned char*)(codigo + *pos), cod_ret, 5);
 	*pos += 5;
 }
@@ -133,7 +143,6 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 
 	memcpy((unsigned char*)(codigo_in + *pos), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza posicao final do vetor de codigo
-
 }
 
 void move_lugar_certo(unsigned char* codigo_in, int *pos, char var, int inx){	// Recebe o termo que recebera a atribuicao
@@ -158,13 +167,16 @@ void move_lugar_certo(unsigned char* codigo_in, int *pos, char var, int inx){	//
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 }
 
-void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
+void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c, int line){
 	int idx0, idx1, idx2, size = 0;
     char var0 = c, var1, var2, op;
 	unsigned char cod_atribuicao[14];	// 14 eh o tamanho maximo que o codigo de atribuicao assume
 
-    fscanf(f, "%d = %c%d %c %c%d", &idx0, &var1, &idx1, &op, &var2, &idx2);
-
+	if (fscanf(f, "%d = %c%d %c %c%d", &idx0, &var1, &idx1, &op, &var2, &idx2) != 6){
+		error("comando invalido", line);
+		return;
+	}
+            
 	switch (var1){ // Checa primeiro termo da atribuicao
 		case 'p': { //Parametro
 			// Mover parametro pro %edx
@@ -203,15 +215,17 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c){
 
 	// Movendo pro lugar certo
 	move_lugar_certo(codigo, pos, var0, idx0);
-	
 }
 
-void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, long *endPosJmp, int *linhaDestino, int *countJmp){
+void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, long *endPosJmp, int *linhaDestino, int *countJmp, int line){
 	char varp;
     int idx, linha, size = 0;
     unsigned char codigo_desvio[12]; //12 eh o tamanho maximo do codigo de desvio
 
-	fscanf(f, "f %c%d %d", &varp, &idx, &linha);
+	if (fscanf(f, "f %c%d %d", &varp, &idx, &linha) != 3){
+            error("comando invalido", line);
+            return;
+        }
 
 	switch (varp){ // Checa primeiro termo da atribuicao
 		case 'p': { // Parametro
@@ -249,12 +263,6 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, int *idxJmp, l
 	endPosJmp[*countJmp] = (long)&codigo[*pos]; // Guarda o endereço da instrução logo depois da instrução de desvio
 	linhaDestino[*countJmp] = linha; // Guarda numero da linha para onde o jump vai
 	(*countJmp)++;
-
-}
-
-static void error (const char *msg, int line) {
-  fprintf(stderr, "erro %s na linha %d\n", msg, line);
-  exit(EXIT_FAILURE);
 }
 
 funcp compila (FILE *f){
@@ -264,8 +272,7 @@ funcp compila (FILE *f){
 	int linha = 1, pos = 0, i, aux, countJmp = 0, linhaDestino[64], idxJmp[64];
 	long endLinhas[64], endPosJmp[64], endDif, endereco;
 	char c;
-/* 
-	
+/* 	
 	endLinhas = array que armazena o endereco de cada uma das linhas do arquivo
 	idxJmp = array que armazena o indice do codigo que precisa preencher com o endDif
 	endPosJmp = array que armazena o endereco da posicao do codigo onde esta a primeira instrucao pós jump
@@ -288,16 +295,16 @@ printf("COMPILA ATUAL");
 
 	    switch (c) {
 	      case 'r': { // Retorno 
-	        gera_cod_ret(f, codigo, &pos);
+	        gera_cod_ret(f, codigo, &pos, linha);
 	        break;
 	      }
 	      case 'v': 
 	      case 'p': {  // Atribuicao 
-			gera_cod_atribuicao(f, codigo, &pos, c);
+			gera_cod_atribuicao(f, codigo, &pos, c, linha);
 	        break;
 	      }
 	      case 'i': { // Desvio 
-	        gera_cod_desvio (f, codigo, &pos, idxJmp, endPosJmp, linhaDestino, &countJmp);
+	        gera_cod_desvio (f, codigo, &pos, idxJmp, endPosJmp, linhaDestino, &countJmp, linha);
 	        break;
 	      }
 	      default: error("Comando Desconhecido", linha);
