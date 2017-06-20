@@ -23,7 +23,7 @@ static void error (const char *msg, int line) {
   exit(EXIT_FAILURE);
 }
 
-void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos, int line){
+void gera_cod_ret(FILE *f, int *pos, int line){
 	char c0;
 
     if (fscanf(f, "et%c", &c0) != 1) {
@@ -35,47 +35,47 @@ void gera_cod_ret(FILE *f, unsigned char *codigo, int *pos, int line){
 	*pos += 5;
 }
 
-void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int inx) { // Recebe o operador e o segundo termo da atribuicao
-	unsigned char codigo[6]; // 6 eh o tamanho maximo que a instrucao assume
+void faz_operacao(int *pos, char op, char var, int inx) { // Recebe o operador e o segundo termo da atribuicao
+	unsigned char instrucao[6]; // 6 eh o tamanho maximo que a instrucao assume
 	int size = 0; // Tamanho da instrucao, que varia se for parametro, variavel local ou constante
 	switch(op) {
 		case '+': { // Adicao
 
 			if(var == 'p') { // Parametro
 				// addl %edi ou %esi, %edx
-				codigo[0] = 0x01;
+				instrucao[0] = 0x01;
 				if(inx == 1) // p1 (%edi)
-					codigo[1] = 0xfa;
+					instrucao[1] = 0xfa;
 				else		 // p2 (%esi)
-					codigo[1] = 0xf2;
+					instrucao[1] = 0xf2;
 
 				size = 2;
 			}
 			else if(var == 'v') { // Variavel local
 				// addl -x(%rbp), %edx
-				codigo[0] = 0x03;
-				codigo[1] = 0x55;
-				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+				instrucao[0] = 0x03;
+				instrucao[1] = 0x55;
+				instrucao[2] = 0xff + 1 - 4*(unsigned char)inx;
 
 				size = 3;
 			}
 			else { // Constante
 				if(inx < 128) {	
 					// addl $0xXX, %edx
-					codigo[0] = 0x83;
-					codigo[1] = 0xc2;
-					codigo[2] = (unsigned char) inx;
+					instrucao[0] = 0x83;
+					instrucao[1] = 0xc2;
+					instrucao[2] = (unsigned char) inx;
 
 					size = 3;
 				}
 				else {
 					// addl $0xXXXXXXXX, %edx
-					codigo[0] = 0x81;
-					codigo[1] = 0xc2;
-					codigo[2] = (unsigned char) (inx & 0xff);
-					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
-					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
-					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+					instrucao[0] = 0x81;
+					instrucao[1] = 0xc2;
+					instrucao[2] = (unsigned char) (inx & 0xff);
+					instrucao[3] = (unsigned char) ((inx >> 8) & 0xff);
+					instrucao[4] = (unsigned char) ((inx >> 16) & 0xff);
+					instrucao[5] = (unsigned char) ((inx >> 24) & 0xff);
 					size = 6;
 				}
 			}
@@ -85,39 +85,39 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 			
 			if(var == 'p') { // Parametro
 				// subl %edi ou %esi, %edx
-				codigo[0] = 0x29;
+				instrucao[0] = 0x29;
 				if(inx == 1) // p1 (%edi)
-					codigo[1] = 0xfa;
+					instrucao[1] = 0xfa;
 				else		 // p2 (%esi)
-					codigo[1] = 0xf2;
+					instrucao[1] = 0xf2;
 
 				size = 2;
 			}
 			else if(var == 'v') { // Variavel local
 				// subl -x(%rbp), %edx
-				codigo[0] = 0x2b;
-				codigo[1] = 0x55;
-				codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+				instrucao[0] = 0x2b;
+				instrucao[1] = 0x55;
+				instrucao[2] = 0xff + 1 - 4*(unsigned char)inx;
 
 				size = 3;
 			}
 			else { // Constante
 				if(inx < 128) { 
 					// subl $0xXX, %edx
-					codigo[0] = 0x83;
-					codigo[1] = 0xea;
-					codigo[2] = (char) inx;
+					instrucao[0] = 0x83;
+					instrucao[1] = 0xea;
+					instrucao[2] = (char) inx;
 
 					size = 3;
 				}
 				else {
 					// subl $0xXXXXXXXX, %edx
-					codigo[0] = 0x81;
-					codigo[1] = 0xea;
-					codigo[2] = (unsigned char) (inx & 0xff);
-					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
-					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
-					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+					instrucao[0] = 0x81;
+					instrucao[1] = 0xea;
+					instrucao[2] = (unsigned char) (inx & 0xff);
+					instrucao[3] = (unsigned char) ((inx >> 8) & 0xff);
+					instrucao[4] = (unsigned char) ((inx >> 16) & 0xff);
+					instrucao[5] = (unsigned char) ((inx >> 24) & 0xff);
 
 					size = 6;
 				}
@@ -128,41 +128,41 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 			
 			if(var == 'p') { // Parametro
 				// imull %edi ou %esi, %edx
-				codigo[0] = 0x0f;
-				codigo[1] = 0xaf;
+				instrucao[0] = 0x0f;
+				instrucao[1] = 0xaf;
 				if(inx == 1) // p1 (%edi)
-					codigo[2] = 0xd7;
+					instrucao[2] = 0xd7;
 				else		 // p2 (%esi)
-					codigo[2] = 0xd6;
+					instrucao[2] = 0xd6;
 
 				size = 3;
 			}
 			else if(var == 'v') { // Variavel local
 				// imull -x(%rbp), %edx
-				codigo[0] = 0x0f;
-				codigo[1] = 0xaf;
-				codigo[2] = 0x55;
-				codigo[3] = 0xff + 1 - 4*(unsigned char)inx;
+				instrucao[0] = 0x0f;
+				instrucao[1] = 0xaf;
+				instrucao[2] = 0x55;
+				instrucao[3] = 0xff + 1 - 4*(unsigned char)inx;
 
 				size = 4;
 			}
 			else { // Constante
 				if(inx < 128) { 
 					// imull $0xXX, %edx
-					codigo[0] = 0x6b;
-					codigo[1] = 0xd2;
-					codigo[2] = (char) inx;
+					instrucao[0] = 0x6b;
+					instrucao[1] = 0xd2;
+					instrucao[2] = (char) inx;
 
 					size = 3;
 				}
 				else {
 					// imull $0xXXXXXXXX, %edx
-					codigo[0] = 0x69;
-					codigo[1] = 0xd2;
-					codigo[2] = (inx & 0xff);
-					codigo[3] = (unsigned char) ((inx >> 8) & 0xff);
-					codigo[4] = (unsigned char) ((inx >> 16) & 0xff);
-					codigo[5] = (unsigned char) ((inx >> 24) & 0xff);
+					instrucao[0] = 0x69;
+					instrucao[1] = 0xd2;
+					instrucao[2] = (inx & 0xff);
+					instrucao[3] = (unsigned char) ((inx >> 8) & 0xff);
+					instrucao[4] = (unsigned char) ((inx >> 16) & 0xff);
+					instrucao[5] = (unsigned char) ((inx >> 24) & 0xff);
 
 					size = 6;
 				}
@@ -171,38 +171,38 @@ void faz_operacao(unsigned char * codigo_in, int *pos, char op, char var, int in
 		}
 	}
 
-	memcpy((unsigned char*)(codigo_in + *pos), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo + *pos), (unsigned char*)instrucao, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza posicao final do vetor de codigo
 }
 
-void move_lugar_certo(unsigned char* codigo_in, int *pos, char var, int inx){	// Recebe o termo que recebera a atribuicao
-	unsigned char codigo[3]; // 3 eh o tamanho maximo da instrucao
+void move_lugar_certo( int *pos, char var, int inx){	// Recebe o termo que recebera a atribuicao
+	unsigned char instrucao[3]; // 3 eh o tamanho maximo da instrucao
 	int size = 0;
 
-	codigo[0] = 0x89;
+	instrucao[0] = 0x89;
 	if(var == 'p') { // Atribuicao em parametro
 		if(inx == 1) // p1 (%edi)
 			// movl %edx, %edi
-			codigo[1] = 0xd7; 
+			instrucao[1] = 0xd7; 
 		else		 // p2 (%esi)
 			// movl %edx, %esi
-			codigo[1] = 0xd6;
+			instrucao[1] = 0xd6;
 
 		size = 2;
 	}
 	else { // Atribuicao em variavel local
 		// movl %edx, -x(%rbp)
-		codigo[1] = 0x55;
-		codigo[2] = 0xff + 1 - 4*(unsigned char)inx;
+		instrucao[1] = 0x55;
+		instrucao[2] = 0xff + 1 - 4*(unsigned char)inx;
 
 		size = 3;
 	}
 
-	memcpy((unsigned char*)(codigo_in + *pos), (unsigned char*)codigo, size); // Copia a nova instrucao para o vetor de codigo
+	memcpy((unsigned char*)(codigo + *pos), (unsigned char*)instrucao, size); // Copia a nova instrucao para o vetor de codigo
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 }
 
-void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c, int line){
+void gera_cod_atribuicao(FILE *f, int *pos, char c, int line){
 	int idx0, idx1, idx2, size = 0;
     char var0 = c, var1, var2, op;
 	unsigned char cod_atribuicao[14];	// 14 eh o tamanho maximo que o codigo de atribuicao assume
@@ -249,13 +249,13 @@ void gera_cod_atribuicao(FILE *f, unsigned char *codigo, int *pos, char c, int l
 	*pos += size; // Atualiza a posicao final do vetor de codigo
 
 	// Fazendo a operacao no %edx
-	faz_operacao(codigo, pos, op, var2, idx2);
+	faz_operacao(pos, op, var2, idx2);
 
 	// Movendo pro lugar certo
-	move_lugar_certo(codigo, pos, var0, idx0);
+	move_lugar_certo(pos, var0, idx0);
 }
 
-void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, /*int *idxJmp, long *endPosJmp, int *linhaDestino,*/ int *countJmp, int line){
+void gera_cod_desvio (FILE *f, int * pos, int *countJmp, int line){
 	char varp;
     int idx, linha, size = 0;
     unsigned char codigo_desvio[12]; //12 eh o tamanho maximo do codigo de desvio
@@ -344,16 +344,16 @@ funcp compila (FILE *f){
 
 	    switch (c) {
 	      case 'r': { // Retorno 
-	        gera_cod_ret(f, codigo, &pos, linha);
+	        gera_cod_ret(f, &pos, linha);
 	        break;
 	      }
 	      case 'v': 
 	      case 'p': {  // Atribuicao 
-			gera_cod_atribuicao(f, codigo, &pos, c, linha);
+			gera_cod_atribuicao(f, &pos, c, linha);
 	        break;
 	      }
 	      case 'i': { // Desvio 
-	        gera_cod_desvio (f, codigo, &pos, &countJmp, linha);
+	        gera_cod_desvio (f, &pos, &countJmp, linha);
 	        break;
 	      }
 	      default: error("Comando Desconhecido", linha);
