@@ -309,8 +309,8 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, /*int *idxJmp,
 }
 
 funcp compila (FILE *f){
-	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*(50*14 + 8));	
-	// 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
+	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*(50*14 + 8)); 
+	//708 = 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
 	int linha = 1, pos = 0, i, posPreenche, countJmp = 0;
 	long endDif, endereco;
 	char c;
@@ -328,7 +328,7 @@ funcp compila (FILE *f){
 */
 
 // Inicializando o vetor
-    for(i = 0; i < 768; i++){
+    for(i = 0; i < 708; i++){
     	codigo[i] = 0;
     }
 	
