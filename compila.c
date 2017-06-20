@@ -315,7 +315,7 @@ funcp compila (FILE *f){
 	long endDif, endereco;
 	char c;
 
-	//inicializando a estrutura com os vetores usados para fazer o link dos endereços ao local certo
+	//aloca a estrutura com os vetores usados para fazer o link dos endereços ao local certo
 	link = (Linker*)malloc(sizeof(Linker)*50);
 
 /* 	
@@ -372,5 +372,6 @@ funcp compila (FILE *f){
 		codigo[posPreenche+3] = (unsigned char)(endDif>>24);	// Armazena o 4o byte
 	}
 
-  return (funcp) codigo;
+	free(link);
+	return (funcp) codigo;
 }
