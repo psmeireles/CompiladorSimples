@@ -15,6 +15,7 @@ typedef struct linker {
 static unsigned char cod_ret[5] = { 0x8b, 0x45, 0xfc, 0xc9, 0xc3 };	// movl -4(%rbp), %eax	leave	ret 
 static unsigned char cod_pilha[4] = { 0x55, 0x48, 0x89, 0xe5 };		// pushq %rbp	movq %rsp, %rbp 
 static unsigned char cod_sub_rsp[4] = { 0x48, 0x83, 0xec, 0x10 };	// subq $16, %rsp
+static unsigned char *codigo;
 static Linker *link;
 
 static void error (const char *msg, int line) {
@@ -309,22 +310,23 @@ void gera_cod_desvio (FILE *f, unsigned char * codigo, int * pos, /*int *idxJmp,
 }
 
 funcp compila (FILE *f){
-	unsigned char *codigo = (unsigned char*)malloc(sizeof(char)*(50*14 + 8)); 
-	//708 = 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
 	int linha = 1, pos = 0, i, posPreenche, countJmp = 0;
 	long endDif, endereco;
 	char c;
 
+	//aloca vetor de codigo -> tam 708 = 50 vezes o tamanho do maior comando (14) mais o tamanho do comando da pilha (8) 
+	codigo = (unsigned char*)malloc(sizeof(char)*(50*14 + 8)); 
 	//aloca a estrutura com os vetores usados para fazer o link dos endereços ao local certo
 	link = (Linker*)malloc(sizeof(Linker)*50);
 
 /* 	
-	countJmp = quantidade de jumps que são feitos no codigo
-	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
+	VARIAVEIS DE LIGAÇÃO:
 	link[i].linhaDestino = linha para qual sera feito o desvio do jmp
 	link[i].idxJmp = armazena o indice do codigo que precisa preencher com o endDif
 	link[i].endLinhas = armazena o endereco de cada uma das linhas do arquivo
 	link[i].endPosJmp = armazena o endereco da posicao do codigo onde esta a primeira instrucao pós jump
+	countJmp = quantidade de jumps que são feitos no codigo
+	endDif = diferença do endereco da instrucao após o jump e a instrução de destino do jump
 */
 
 // Inicializando o vetor
