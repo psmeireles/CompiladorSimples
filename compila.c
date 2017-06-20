@@ -1,3 +1,6 @@
+/* Gabrielle Brandenburg dos Anjos	1510542		3WB
+   Pedro Sousa Meireles				1510962		3WB	*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
